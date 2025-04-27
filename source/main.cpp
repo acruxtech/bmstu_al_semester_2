@@ -1,9 +1,6 @@
-#include <iostream>
-#include <vector>
-
-#include "../include/Group.h"
+#include "../include/header.hpp"
 
 
 int main() {
-    Group* group = new Group("1");
+    
 }
