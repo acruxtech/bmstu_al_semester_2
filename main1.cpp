@@ -43,10 +43,12 @@ class MyUnique {
         }
 };
 
+
 template<typename T, typename... Args>
 MyUnique<T> Make_MyUnique(Args&&... args) {
     return MyUnique<T>(new T(std::forward<Args>(args)...));
 }
+
 
 class MyPoint {
     double x, y;
@@ -58,6 +60,7 @@ class MyPoint {
             std::cout << "Point(" << x << ", " << y << ")\n";
         }
 };
+
 
 int main() {
     auto p1 = Make_MyUnique<MyPoint>(1.5, 2.5);
