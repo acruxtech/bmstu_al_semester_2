@@ -1,8 +1,8 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include <deque>
-#include <algorithm>
+#include <set>
+#include <unordered_set>
 #include <string>
 
 
@@ -25,8 +25,18 @@ class Car {
             fuel_consumption[2] = mixed;
         }
 
-        Car(const Car& other) = default;
-        Car& operator=(const Car& other) = default;
+        bool operator<(const Car& other) const {
+            return model < other.model;
+        }
+
+        bool operator==(const Car& other) const {
+            return model == other.model &&
+                max_speed == other.max_speed &&
+                power == other.power &&
+                fuel_consumption[0] == other.fuel_consumption[0] &&
+                fuel_consumption[1] == other.fuel_consumption[1] &&
+                fuel_consumption[2] == other.fuel_consumption[2];
+        }
 
         friend std::ostream& operator<<(std::ostream& os, const Car& car) {
             os << "Модель: " << car.model 
@@ -39,17 +49,20 @@ class Car {
             return os;
         }
 
-        bool operator<(const Car& other) const {
-            return model < other.model;
-        }
+        friend struct CarHash;
+};
 
-        const std::string& getModel() const { return model; }
 
-        const double* getFuelConsumption() const { return fuel_consumption; }
-
-        int getMaxSpeed() const { return max_speed; }
-
-        int getPower() const { return power; }
+struct CarHash {
+    size_t operator()(const Car& car) const {
+        size_t h1 = std::hash<std::string>()(car.model);
+        size_t h2 = std::hash<double>()(car.fuel_consumption[0]);
+        size_t h3 = std::hash<double>()(car.fuel_consumption[1]);
+        size_t h4 = std::hash<double>()(car.fuel_consumption[2]);
+        size_t h5 = std::hash<int>()(car.max_speed);
+        size_t h6 = std::hash<int>()(car.power);
+        return h1 ^ (h2 << 1) ^ (h3 << 2) ^ (h4 << 3) ^ (h5 << 4) ^ (h6 << 5);
+    }
 };
 
 
@@ -79,10 +92,17 @@ void writeToFile(const std::string& title, const Container& container, std::ofst
     }
 }
 
-
 int main() {
     std::vector<Car> cars;
     readCarsFromFile(cars, "input.txt");
+
+    std::set<Car> car_set;
+    std::unordered_set<Car, CarHash> car_unordered_set;
+
+    for (const auto& car : cars) {
+        car_set.insert(car);
+        car_unordered_set.insert(car);
+    }
 
     std::ofstream out("output.txt");
     if (!out.is_open()) {
@@ -90,15 +110,9 @@ int main() {
         return 1;
     }
 
-    writeToFile("Исходный вектор", cars, out);
+    writeToFile("Исходные данные (vector)", cars, out);
+    writeToFile("Упорядоченный набор (set)", car_set, out);
+    writeToFile("Неупорядоченный набор (unordered_set)", car_unordered_set, out);
 
-    std::sort(cars.begin(), cars.end());
-    writeToFile("Отсортированный вектор", cars, out);
-
-    std::deque<Car> cars_deque;
-    std::copy(cars.begin(), cars.end(), std::back_inserter(cars_deque));
-    writeToFile("Скопированный двусторонняя очередь", cars_deque, out);
-
-    out.close();
     return 0;
 }
