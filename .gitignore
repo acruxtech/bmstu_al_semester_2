@@ -34,3 +34,6 @@
 
 CMakeFiles/
 Makefile
+*.cmake
+CMakeCache.txt
+hw1
